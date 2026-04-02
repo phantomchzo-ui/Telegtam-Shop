@@ -1,7 +1,8 @@
 import httpx
 
+from app.config import settings
 
-API_KEY = "c8d1993338164174b7070508253007"
+API_KEY = settings.API_KEY_WEATHER
 
 async def get_weathers(lat, lon):
     url = f"https://api.weatherapi.com/v1/current.json?key={API_KEY}&q={lat},{lon}&lang=ru"

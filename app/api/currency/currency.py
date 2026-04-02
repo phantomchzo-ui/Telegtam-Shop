@@ -1,6 +1,8 @@
 import httpx
 
-API_KEY = 'cur_live_xe5ZFwwptPbjyQeCjyLHfTDv6n2SNRZiqKj3rVRk'
+from app.config import settings
+
+API_KEY = settings.API_KEY_CURRENCY
 
 async def get_currency_rates() -> str:
     url = f"https://api.currencyapi.com/v3/latest?apikey={API_KEY}&base_currency=KZT&currencies=USD,EUR,RUB,BTC"

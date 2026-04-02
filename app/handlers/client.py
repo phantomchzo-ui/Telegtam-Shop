@@ -1,20 +1,14 @@
 from aiogram.filters import CommandStart, StateFilter, Command
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery
-from pyexpat.errors import messages
-from sqlalchemy import select
+from aiogram.types import Message
 import ssl
 import certifi
 from geopy.geocoders import Nominatim
-from sqlalchemy.testing.suite.test_reflection import metadata
 
 from app.database.models import async_session, User, Photo
-from app.database.request import get_card, check_user, get_user, check_admin, get_photos, get_all_users
+from app.database.request import check_user, get_user, check_admin, get_photos, get_all_users
 import app.keyboards as kb
 from aiogram.fsm.context import FSMContext
-
-from app.state import RegStates
-
 
 client = Router()
 
@@ -24,64 +18,19 @@ geolocator = Nominatim(user_agent='TelegramBotForShop', ssl_context=ctx)
 @client.message(CommandStart())
 async def start(message: Message):
     is_registered = await check_user(message.from_user.id)
-    #print(is_registered)
     if not is_registered:
         await message.answer('You need to registration! use command /reg or click on -> /reg \nYou can use /help command')
     else:
-        await message.answer("Hello again, welcome to our shop!", reply_markup=kb.menu)
+        await message.answer("Hello again, use this commands \n\n\n "
+                             '/start - Start the bot\n'
+                         '/reg - Register your account\n'
+                         '/share - Share any photo\n'
+                         '/weather - Show the weather\n'
+                         '/currency - Show currency rates\n'
+                         '/fact - Get a random useless fact')
 
 
 
-@client.callback_query(F.data.startswith('categories'))
-@client.message(F.text == 'Catalog')
-async def catalog(event: Message | CallbackQuery):
-    if isinstance(event, Message):
-        await event.answer('Chose the category', reply_markup=await kb.categories())
-    else:
-        await event.answer('U back ')
-        await event.message.edit_text('Chose the category', reply_markup=await kb.categories())
-
-@client.message(F.text=='Contacts')
-async def contacts(message: Message):
-    await message.answer('This is our contacts if you have some issues', reply_markup=kb.contacts)
-
-
-@client.callback_query(F.data.startswith('category_'))
-async def cards(callback: CallbackQuery):
-    await callback.answer()
-    category_id = callback.data.split('_')[1]
-    try:
-        await callback.message.edit_text('Chose the thing', reply_markup=await kb.cards(category_id))
-    except:
-        await callback.message.delete()
-        await callback.message.answer('Chose the thing', reply_markup=await kb.cards(category_id))
-
-'''''
-@client.callback_query(F.data.startswith('categories'))
-async def back_to_categories(callback: CallbackQuery):
-    await callback.answer()
-    await callback.message.answer('Chose the category', reply_markup=await kb.categories())
-'''''
-
-
-@client.callback_query(F.data.startswith('card_'))
-async def card_info(callback: CallbackQuery):
-    await callback.answer()
-    card_id = int(callback.data.split('_')[1])
-    card = await get_card(card_id)
-    await callback.message.delete()
-    await callback.message.answer_photo(photo=card.image,
-                               caption=f'{card.name} \n\n {card.price}Rub \n\n {card.description}',
-                               reply_markup=await kb.back_to_categories(card.category_id, card_id))
-
-
-@client.callback_query(F.data.startswith('buy_'))
-async def client_buy(callback: CallbackQuery, state: FSMContext):
-    await callback.answer()
-    card_id = int(callback.data.split('_')[1])
-    await state.set_state('waiting for address')
-    await state.update_data(card_id=card_id)
-    await callback.message.answer('You need to share your location', reply_markup=await kb.client_location())
 
 @client.message(F.location, StateFilter('waiting for address'))
 async def getting_location(message: Message, state: FSMContext):
@@ -198,11 +147,6 @@ async def do_broadcast(message: Message, state: FSMContext):
     await state.clear()
 
 
-
-
-
-
-
 @client.message(F.text)
 async def text(message: Message):
     await message.reply('Unknown command to see all commands click on -> /help')
@@ -213,27 +157,3 @@ async def get_photo(message:Message):
     await message.answer(file_id)
 
 
-
-'''''
-@client.message(F.text == 'Анель')
-async def send_photo(message: Message):
-    await message.answer_photo(photo='AgACAgIAAxkBAAIDXWiHXi4M2RklAAGJ5dpQK0MPGdeQQQACyvIxG68vOUhv2t1-yr7hiwEAAwIAA3kAAzYE')
-
-
-@client.message(F.text == 'Лес')
-async def send_photo(message: Message):
-    await message.answer_photo(photo='AgACAgIAAxkBAAIDY2iHXn9FaiO-WZKD8zmlUXbWRBIAA87yMRuvLzlIOV-_jdlzqrABAAMCAAN5AAM2BA')
-
-@client.message(F.text == 'Очки')
-async def send_photo(message: Message):
-    await message.answer_photo(photo='AgACAgIAAxkBAAIDjWiHYCVSzfys2-_tipz5GdUghUdSAALe8jEbry85SJH-319uFEneAQADAgADeQADNgQ')
-
-@client.message(F.text == 'Жоламан')
-async def send_photo(message: Message):
-    await message.answer_photo(photo='AgACAgIAAxkBAAIDk2iHYIbyraODVuV-G-M6UG6FFkiaAALg8jEbry85SOO70OWJ4d_ZAQADAgADeQADNgQ')
-
-@client.message(F.text == 'Дилека')
-async def send_photo(message: Message):
-    await message.answer_photo(photo='AgACAgIAAxkBAAIDoWiHYUqFZmENfYa6cWLMRAh6ZZAxAALl8jEbry85SIIeaxzw6OXaAQADAgADeQADNgQ')
-
-'''''

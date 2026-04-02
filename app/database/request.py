@@ -1,8 +1,5 @@
-from aiogram.types import InlineKeyboardButton
-from aiogram.utils.keyboard import InlineKeyboardBuilder
-
-from app.database.models import async_session, User, Card, Category, Photo
-from sqlalchemy import select, update
+from app.database.models import async_session, User, Photo
+from sqlalchemy import select
 
 async def check_user(tg_id:int):
     async with async_session() as session:
@@ -10,21 +7,6 @@ async def check_user(tg_id:int):
             return True
         return False
 
-
-async def get_categories():
-    async with async_session() as session:
-        return await session.scalars(select(Category))
-
-async def get_card_by_category(category_id):
-    category_id = int(category_id)
-    async with async_session() as session:
-        return await session.scalars(
-            select(Card).where(Card.category_id == category_id)
-        )
-
-async def get_card(card_id):
-    async with async_session() as session:
-        return await session.scalar(select(Card).where(Card.id==card_id))
 
 async def get_user(tg_id):
     async with async_session() as session:
