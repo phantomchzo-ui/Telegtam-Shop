@@ -39,7 +39,7 @@ async def get_phone(message: Message, state: FSMContext):
         session.add(user)
         await session.commit()
 
-    await message.answer('Success, You can use bot', reply_markup=kb.menu)
+    await message.answer('Success, You can use bot just click the -> /help')
     await state.clear()
 
 
